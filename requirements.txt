@@ -5,3 +5,4 @@ art==5.7
 black==22.6.0 
 
 python-dotenv
+supervisely==6.68.26

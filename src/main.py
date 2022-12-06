@@ -38,11 +38,11 @@ def main():
         fin_bl_x, fin_bl_y = int(max(tl)),int(min(tl)) + int(widthB) - 1
 
 
-        dst = np.array(
+        dst = np.array([
 		[fin_tl_x, fin_tl_y],
 		[fin_tr_x, fin_tr_y],
 		[fin_br_x, fin_br_y],
-		[fin_bl_x, fin_bl_y], dtype = "float32")
+		[fin_bl_x, fin_bl_y]], dtype = "float32")
 
         M = cv2.getPerspectiveTransform(rect, dst)
         warped = cv2.warpPerspective(src=image, M=M, dsize=(orig_wid, orig_height))

@@ -23,20 +23,12 @@ def main():
     def four_point_transform(image, pts):
         rect = order_points(pts)
         (tl, tr, br, bl) = rect
-
-        widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
         widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
-        maxWidth = max(int(widthA), int(widthB))
-
-        heightA = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
-        heightB = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
-        maxHeight = max(int(heightA), int(heightB))
 
         fin_tl_x, fin_tl_y = int(max(tl)), int(min(tl))
         fin_tr_x, fin_tr_y = int(max(tl)) + int(widthB) - 1, int(min(tl))
         fin_br_x, fin_br_y = int(max(tl)) + int(widthB) - 1, int(min(tl)) + int(widthB) - 1
         fin_bl_x, fin_bl_y = int(max(tl)),int(min(tl)) + int(widthB) - 1
-
 
         dst = np.array([
 		[fin_tl_x, fin_tl_y],
@@ -47,12 +39,13 @@ def main():
         M = cv2.getPerspectiveTransform(rect, dst)
         warped = cv2.warpPerspective(src=image, M=M, dsize=(orig_wid, orig_height))
 
-        return warped
-    
+        return warped 
+
     # image = cv2.imread('test.jpg')
     image = cv2.imread('image1.jpg')
     orig_height = image.shape[0]
     orig_wid = image.shape[1]
+    print(image.shape)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (5, 5), 0)
     edged = cv2.Canny(gray, 75, 200)
@@ -74,7 +67,6 @@ def main():
         if len(approx) == 4:
             screenCnt = approx
             break
-    # show the contour (outline) of the piece of paper
     print("STEP 2: Find contours of paper")
     image_to_cntr = image.copy()
     countered_img = cv2.drawContours(image_to_cntr, [screenCnt], -1, (0, 255, 0), 2)
@@ -86,7 +78,7 @@ def main():
     warped = four_point_transform(image, pts)
 
     detector = cv2.QRCodeDetector()
-    data, vertices_array, binary_qrcode = detector.detectAndDecode(countered_img)
+    data, vertices_array, binary_qr = detector.detectAndDecode(countered_img)
 
     if vertices_array is not None:
         print("QRCode data:")

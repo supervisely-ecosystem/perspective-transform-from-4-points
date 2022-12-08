@@ -3,12 +3,55 @@ from dotenv import load_dotenv
 import numpy as np
 import cv2
 import imutils
+import supervisely as sly
 # load ENV variables for debug
 # has no effect in production
+load_dotenv(os.path.expanduser("~/supervisely.env"))
 load_dotenv("local.env")
 
 
 def main():
+    api = sly.Api.from_env()
+    team_id = sly.env.team_id()
+    remote_dir = sly.env.folder()
+    files_info = api.file.list2(team_id, remote_dir)
+
+    progress = sly.Progress("Processing...", len(files_info))
+    for info in files_info:
+        remote_path = info.path
+        # remote_path = sly.env.file()
+        if sly.image.has_valid_ext(remote_path) is False:
+            progress.iter_done_report()
+            continue
+
+        local_path = os.path.join("src", sly.fs.get_file_name_with_ext(remote_path))
+        api.file.download(team_id, remote_path, local_path)
+
+        result_name = (
+            sly.fs.get_file_name(local_path)
+            + "_transformed"
+            + sly.fs.get_file_ext(local_path)
+        )
+        local_result_path = os.path.join("src", result_name)
+        run_n_qrdetect(local_path, local_result_path)
+
+        remote_result_path = os.path.join(os.path.dirname(remote_path), result_name)
+        if api.file.exists(team_id, remote_result_path) is True:
+            api.file.remove(team_id, remote_result_path)
+        api.file.upload(team_id, local_result_path, remote_result_path)
+
+        sly.fs.silent_remove(local_path)
+        sly.fs.silent_remove(local_result_path)
+
+        progress.iter_done_report()
+    
+    print("Done")
+    
+    if sly.is_production():
+        task_id = sly.env.task_id()
+        file_info = api.file.get_info_by_path(team_id, remote_result_path)
+        api.task.set_output_directory(task_id, file_info.id, remote_dir)
+   
     def order_points(pts):
         rect = np.zeros((4, 2), dtype = "float32")
         s = pts.sum(axis = 1)
@@ -40,21 +83,15 @@ def main():
         warped = cv2.warpPerspective(src=image, M=M, dsize=(orig_wid, orig_height))
 
         return warped 
-
-    # image = cv2.imread('test.jpg')
-    image = cv2.imread('image1.jpg')
+   
+    def run_n_qrdetect(local_path, local_result_path):
+    image = cv2.imread(local_path)
     orig_height = image.shape[0]
     orig_wid = image.shape[1]
     print(image.shape)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (5, 5), 0)
     edged = cv2.Canny(gray, 75, 200)
-    print("STEP 1: Edge Detection")
-    cv2.imshow("Image", image)
-    cv2.imshow("Edged", edged)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
     cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
     cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:5]
@@ -67,12 +104,9 @@ def main():
         if len(approx) == 4:
             screenCnt = approx
             break
-    print("STEP 2: Find contours of paper")
+
     image_to_cntr = image.copy()
     countered_img = cv2.drawContours(image_to_cntr, [screenCnt], -1, (0, 255, 0), 2)
-    cv2.imshow("Outline", countered_img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
 
     pts = np.array(screenCnt.reshape(4,2),dtype="float32")
     warped = four_point_transform(image, pts)
@@ -86,9 +120,7 @@ def main():
     else:
         print("There is no QR code or program has failed to detect it it.") 
 
-    cv2.imshow("Original", image)
-    cv2.imshow("Warped", warped)
-    cv2.waitKey(0)
+    cv2.imwrite(local_result_path, warped)
 
 if __name__ == "__main__":
     main()

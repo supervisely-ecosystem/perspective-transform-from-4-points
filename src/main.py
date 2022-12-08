@@ -20,29 +20,8 @@ def main():
         rect[1] = pts[np.argmin(diff)]
         rect[3] = pts[np.argmax(diff)]
         return rect
-
-    def four_point_transform(image, pts):
-        rect = order_points(pts)
-        (tl, tr, br, bl) = rect
-        widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
-
-        fin_tl_x, fin_tl_y = int(max(tl)), int(min(tl))
-        fin_tr_x, fin_tr_y = int(max(tl)) + int(widthB) - 1, int(min(tl))
-        fin_br_x, fin_br_y = int(max(tl)) + int(widthB) - 1, int(min(tl)) + int(widthB) - 1
-        fin_bl_x, fin_bl_y = int(max(tl)),int(min(tl)) + int(widthB) - 1
-
-        dst = np.array([
-		[fin_tl_x, fin_tl_y],
-		[fin_tr_x, fin_tr_y],
-		[fin_br_x, fin_br_y],
-		[fin_bl_x, fin_bl_y]], dtype = "float32")
-
-        M = cv2.getPerspectiveTransform(rect, dst)
-        warped = cv2.warpPerspective(src=image, M=M, dsize=(orig_wid, orig_height))
-
-        return warped 
    
-    def run_n_qrdetect(local_path, local_result_path):
+    def transform_n_qrdetect(local_path, local_result_path):
         image = cv2.imread(local_path)
         orig_height = image.shape[0]
         orig_wid = image.shape[1]
@@ -66,7 +45,18 @@ def main():
         countered_img = cv2.drawContours(image_to_cntr, [screenCnt], -1, (0, 255, 0), 2)
 
         pts = np.array(screenCnt.reshape(4,2),dtype="float32")
-        warped = four_point_transform(image, pts)
+        rect = order_points(pts)
+        (tl, tr, br, bl) = rect
+        widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
+
+        dst = np.array([
+		[int(max(tl)), int(min(tl))],
+		[int(max(tl)) + int(widthB) - 1, int(min(tl))],
+		[int(max(tl)) + int(widthB) - 1, int(min(tl)) + int(widthB) - 1],
+		[int(max(tl)),int(min(tl)) + int(widthB) - 1]], dtype = "float32")
+
+        M = cv2.getPerspectiveTransform(rect, dst)
+        warped = cv2.warpPerspective(src=image, M=M, dsize=(orig_wid, orig_height))
 
         detector = cv2.QRCodeDetector()
         data, vertices_array, binary_qr = detector.detectAndDecode(countered_img)
@@ -101,7 +91,7 @@ def main():
             + sly.fs.get_file_ext(local_path)
         )
         local_result_path = os.path.join("src", result_name)
-        run_n_qrdetect(local_path, local_result_path)
+        transform_n_qrdetect(local_path, local_result_path)
 
         remote_result_path = os.path.join(os.path.dirname(remote_path), result_name)
         if api.file.exists(team_id, remote_result_path) is True:

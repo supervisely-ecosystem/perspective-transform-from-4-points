@@ -1,11 +1,12 @@
 {
   "release": { "version": "v1.0.0", "name": "init" },
-  "slug": "supervisely-ecosystem/perspective-transform-using-qr-code",
+  "slug": "gera/perspective-transform-using-qr-code",
   "main_script": "src/main.py",
   "headless": true,
-  "name": "Hello World!",
-  "description": "Demonstrates how to turn your python script into Supervisely App",
+  "name": "Perspective transform using QR code",
+  "description": "This app perspective transforms and warps your images using qr code in them.",
   "categories": ["development"],
-  "icon": "https://user-images.githubusercontent.com/12828725/182186256-5ee663ad-25c7-4a62-9af1-fbfdca715b57.png",
+  "icon": "https://user-images.githubusercontent.com/115161827/207130914-a836bba6-a29f-4905-8428-c9f40c09d21a.jpg",
+  "icon_cover": true,
   "poster": "https://user-images.githubusercontent.com/12828725/182181033-d0d1a690-8388-472e-8862-e0cacbd4f082.png"
 }

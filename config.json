@@ -1,6 +1,6 @@
 {
-  "release": { "version": "v1.0.0", "name": "my first release" },
-  "slug": "supervisely-ecosystem/hello-world-app",
+  "release": { "version": "v1.0.0", "name": "init" },
+  "slug": "supervisely-ecosystem/perspective-transform-using-qr-code",
   "main_script": "src/main.py",
   "headless": true,
   "name": "Hello World!",

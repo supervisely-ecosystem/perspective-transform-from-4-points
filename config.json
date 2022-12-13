@@ -5,7 +5,11 @@
   "headless": true,
   "name": "Perspective transform using QR code",
   "description": "This app perspective transforms and warps your images using qr code in them.",
-  "categories": ["development"],
+  "categories": [ 
+    "images",
+    "annotation transformation",
+    "data operations"
+  ],
   "icon": "https://user-images.githubusercontent.com/115161827/207130914-a836bba6-a29f-4905-8428-c9f40c09d21a.jpg",
   "icon_cover": true,
   "poster": "https://user-images.githubusercontent.com/12828725/182181033-d0d1a690-8388-472e-8862-e0cacbd4f082.png"

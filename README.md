@@ -1,4 +1,4 @@
-<div align="center" markdown>
+<!-- <div align="center" markdown>
 <img src="https://user-images.githubusercontent.com/115161827/202196829-fc71bc02-73b0-40a4-a02a-1e1ac9cad13e.jpg"/>  
 
 # Perspective transform using QR code
@@ -60,4 +60,4 @@ Once you added it to your readme, it will be shown nicely in both Supervisely pl
 
 In Supervisely  |  In GitHub
 :-------------------------:|:-----------------------------------:
-<img src="https://user-images.githubusercontent.com/115161827/202243190-fe28997c-2c70-46dd-9f15-9122b4ce9ad4.png" style="max-height: 300px; width: auto;"/>  |  <img src="https://user-images.githubusercontent.com/115161827/202243009-3e17cd2a-08ef-4636-9ed0-109b662dfe63.png" style="max-height: 300px; width: auto;"/>
+<img src="https://user-images.githubusercontent.com/115161827/202243190-fe28997c-2c70-46dd-9f15-9122b4ce9ad4.png" style="max-height: 300px; width: auto;"/>  |  <img src="https://user-images.githubusercontent.com/115161827/202243009-3e17cd2a-08ef-4636-9ed0-109b662dfe63.png" style="max-height: 300px; width: auto;"/> -->

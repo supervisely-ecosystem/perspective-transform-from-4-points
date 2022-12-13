@@ -1,5 +1,5 @@
 {
-  "release": { "version": "v1.0.0", "name": "perspective-qr" },
+  "release": { "version": "v1.0.2", "name": "perspective-qr" },
   "slug": "gera/perspective-transform-using-qr-code",
   "main_script": "src/main.py",
   "headless": true,
@@ -10,6 +10,12 @@
     "annotation transformation",
     "data operations"
   ],
+  "context_menu": {
+    "context_category": "Transform",
+    "target": [
+      "images_project"
+    ]
+  },
   "icon": "https://user-images.githubusercontent.com/115161827/207130914-a836bba6-a29f-4905-8428-c9f40c09d21a.jpg",
   "icon_cover": true,
   "poster": "https://user-images.githubusercontent.com/12828725/182181033-d0d1a690-8388-472e-8862-e0cacbd4f082.png"

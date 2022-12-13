@@ -81,10 +81,12 @@ def main():
     progress = sly.Progress("Processing...", project.items_count)
     for dataset in datasets:
         new_dataset = api.dataset.create(new_project.id, dataset.name)
-
         images = api.image.get_list(dataset.id)
         for image in images:
-            local_path = os.path.join("src", image.name)
+            class_qr = sly.ObjClass(name="QR", geometry_type=sly.Polygon, color=[0, 255, 0])
+            meta = sly.ProjectMeta(obj_classes=[class_qr])
+            api.project.update_meta(project.id, meta)
+            local_path = os.path.join("src", image.name)    
             api.image.download_path(image.id, local_path)
             res_name = "res_" + image.name
             local_result_path = os.path.join("src", res_name)

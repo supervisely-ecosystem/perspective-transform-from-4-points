@@ -47,11 +47,16 @@ def transform_n_qrdetect(local_path, local_result_path):
     (tl, tr, br, bl) = rect
     widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
 
-    dst = np.array([
+    matrix = [
 	[int(max(tl)), int(min(tl))],
 	[int(max(tl)) + int(widthB) - 1, int(min(tl))],
 	[int(max(tl)) + int(widthB) - 1, int(min(tl)) + int(widthB) - 1],
-	[int(max(tl)),int(min(tl)) + int(widthB) - 1]], dtype = "float32")
+	[int(max(tl)),int(min(tl)) + int(widthB) - 1]]
+
+    dst = np.array(matrix, dtype = "float32")
+
+    polygon = sly.Polygon(exterior=matrix)
+    label = sly.Label(geometry=polygon,obj_class=class_qr)
 
     M = cv2.getPerspectiveTransform(rect, dst)
     warped = cv2.warpPerspective(src=image, M=M, dsize=(orig_wid, orig_height))

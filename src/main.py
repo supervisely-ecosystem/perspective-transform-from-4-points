@@ -69,17 +69,14 @@ def transform_n_qrdetect(local_path, local_result_path):
 
     detector = cv2.QRCodeDetector()
     data, vertices_array, bin_qr = detector.detectAndDecode(countered_img)
-
-    tags = sly.TagCollection(items=list[
-        "QR_edge": int(data),
-        "area": int(data) * int(data),
-        "measure":"cm"])
-
-    if vertices_array is not None:
-        print("QRCode data:")
-        print(data)
+    if int(data) is not None:
+        tags = sly.TagCollection(items=list[
+            "QR_edge": int(data),
+            "area": int(data) * int(data),
+            "measure":"cm"])
     else:
-        print("There is no QR code or program has failed to detect it it.") 
+        tags = None
+        print("QR code is either not found or there is no values in it.")
 
     cv2.imwrite(local_result_path, warped)
 

@@ -76,7 +76,7 @@ def transform_n_qrdetect(local_path, local_result_path):
         tag_meta_area = sly.TagMeta(name="Area", value_type="any_number")
         tag_meta_measure = sly.TagMeta(name="measure unit", value_type="oneof_string", possible_values=["cm", "inch"])
 
-        edge_tag = sly.Tag(meta=tag_meta_edge, value=data,)
+        edge_tag = sly.Tag(meta=tag_meta_edge, value="data")
         area_tag = sly.Tag(meta=tag_meta_area, value=str(round(data_value * data_value)))
         measure_tag = sly.Tag(meta=tag_meta_measure, value="cm")
 

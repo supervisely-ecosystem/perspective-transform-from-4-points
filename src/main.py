@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 import imutils
 import supervisely as sly
-from ast import literal_eval
+import ast
 # load ENV variables for debug
 # has no effect in production
 load_dotenv(os.path.expanduser("~/supervisely.env"))

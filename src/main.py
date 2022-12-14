@@ -11,6 +11,7 @@ load_dotenv(os.path.expanduser("~/supervisely.env"))
 load_dotenv("local.env")
 
 class_qr = None
+data_value= None
 
 def order_points(pts):
     rect = np.zeros((4, 2), dtype = "float32")
@@ -23,6 +24,7 @@ def order_points(pts):
     return rect
 
 def transform_n_qrdetect(local_path, local_result_path):
+    global data_value
     image = cv2.imread(local_path)
     orig_height = image.shape[0]
     orig_wid = image.shape[1]
@@ -71,20 +73,7 @@ def transform_n_qrdetect(local_path, local_result_path):
     detector = cv2.QRCodeDetector()
     data, vertices_array, bin_qr = detector.detectAndDecode(countered_img)
     data_value = ast.literal_eval(data)
-    if data_value is float or int:
-        tag_meta_edge = sly.TagMeta(name="QR_edge", value_type="any_number")
-        tag_meta_area = sly.TagMeta(name="Area", value_type="any_number")
-        tag_meta_measure = sly.TagMeta(name="measure unit", value_type="oneof_string", possible_values=["cm", "inch"])
-
-        edge_tag = sly.Tag(meta=tag_meta_edge, value=data_value)
-        area_tag = sly.Tag(meta=tag_meta_area, value=(round(data_value * data_value)))
-        measure_tag = sly.Tag(meta=tag_meta_measure, value="cm")
-
-        tags = sly.TagCollection(items=[edge_tag,area_tag,measure_tag])
-    else:
-        tags = None
-        print("QR code is either not found or there is no values in it.")
-
+    
     cv2.imwrite(local_result_path, warped)
 
     return polygon, tags
@@ -98,6 +87,10 @@ def main():
     if project is None:
         raise KeyError(f"Project with ID {project_id} not found in your account")
 
+    tag_meta_edge = sly.TagMeta(name="QR_edge", value_type="any_number")
+    tag_meta_area = sly.TagMeta(name="Area", value_type="any_number")
+    tag_meta_measure = sly.TagMeta(name="measure unit", value_type="oneof_string", possible_values=["cm", "inch"])
+
     new_project = api.project.create(project.workspace_id, project.name + "_transformed", description="perspective trasformation" ,change_name_if_conflict=True)
     class_qr = sly.ObjClass(name="QR", geometry_type=sly.Polygon, color=[0, 255, 0])
     new_meta = sly.ProjectMeta(obj_classes=[class_qr])
@@ -108,12 +101,23 @@ def main():
     for dataset in datasets:
         new_dataset = api.dataset.create(new_project.id, dataset.name)
         images = api.image.get_list(dataset.id)
+
         for image in images:
             local_path = os.path.join("src", image.name)    
             api.image.download_path(image.id, local_path)
             res_name = "res_" + image.name
             local_result_path = os.path.join("src", res_name)
             polygon, tags = transform_n_qrdetect(local_path, local_result_path)
+            if data_value is float or int:
+                edge_tag = sly.Tag(meta=tag_meta_edge, value=data_value)
+                area_tag = sly.Tag(meta=tag_meta_area, value=(round(data_value * data_value)))
+                measure_tag = sly.Tag(meta=tag_meta_measure, value="cm")
+
+                tags = sly.TagCollection(items=[edge_tag,area_tag,measure_tag])
+            else:
+                tags = None
+                print("QR code is either not found or there is no values in it.")
+
             new_image = api.image.upload_path(new_dataset.id, image.name, local_result_path)
             label = sly.Label(geometry=polygon, tags=tags, obj_class=class_qr)
             new_ann = sly.Annotation(img_size=[new_image.height, new_image.width], labels=[label], img_tags=tags)

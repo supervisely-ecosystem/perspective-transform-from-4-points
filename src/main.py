@@ -5,23 +5,26 @@ import cv2
 import imutils
 import supervisely as sly
 import ast
+
 # load ENV variables for debug
 # has no effect in production
 load_dotenv(os.path.expanduser("~/supervisely.env"))
 load_dotenv("local.env")
 
 class_qr = None
-data_value= None
+data_value = None
+
 
 def order_points(pts):
-    rect = np.zeros((4, 2), dtype = "float32")
-    s = pts.sum(axis = 1)
+    rect = np.zeros((4, 2), dtype="float32")
+    s = pts.sum(axis=1)
     rect[0] = pts[np.argmin(s)]
     rect[2] = pts[np.argmax(s)]
-    diff = np.diff(pts, axis = 1)
+    diff = np.diff(pts, axis=1)
     rect[1] = pts[np.argmin(diff)]
     rect[3] = pts[np.argmax(diff)]
     return rect
+
 
 def transform_n_qrdetect(local_path, local_result_path):
     global data_value
@@ -33,7 +36,7 @@ def transform_n_qrdetect(local_path, local_result_path):
     edged = cv2.Canny(gray, 75, 200)
     cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
-    cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:5]
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:5]
     # loop over the contours
     for c in cnts:
         peri = cv2.arcLength(c, True)
@@ -47,25 +50,28 @@ def transform_n_qrdetect(local_path, local_result_path):
     image_to_cntr = image.copy()
     countered_img = cv2.drawContours(image_to_cntr, [screenCnt], -1, (0, 255, 0), 2)
 
-    pts = np.array(screenCnt.reshape(4,2),dtype="float32")
+    pts = np.array(screenCnt.reshape(4, 2), dtype="float32")
     rect = order_points(pts)
     (tl, tr, br, bl) = rect
     widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
 
     matrix = [
-	[int(max(tl)), int(min(tl))],
-	[int(max(tl)) + int(widthB) - 1, int(min(tl))],
-	[int(max(tl)) + int(widthB) - 1, int(min(tl)) + int(widthB) - 1],
-	[int(max(tl)),int(min(tl)) + int(widthB) - 1]]
+        [int(max(tl)), int(min(tl))],
+        [int(max(tl)) + int(widthB) - 1, int(min(tl))],
+        [int(max(tl)) + int(widthB) - 1, int(min(tl)) + int(widthB) - 1],
+        [int(max(tl)), int(min(tl)) + int(widthB) - 1],
+    ]
 
-    dst = np.array(matrix, dtype = "float32")
-    
-    polygon = sly.Polygon(exterior=[
-        sly.PointLocation(int(min(tl)), int(max(tl))), 
-        sly.PointLocation(int(min(tl)), int(max(tl)) + int(widthB)), 
-        sly.PointLocation(int(min(tl)) + int(widthB), int(max(tl)) + int(widthB)),
-        sly.PointLocation(int(min(tl)) + int(widthB), int(max(tl)))
-    ])
+    dst = np.array(matrix, dtype="float32")
+
+    polygon = sly.Polygon(
+        exterior=[
+            sly.PointLocation(int(min(tl)), int(max(tl))),
+            sly.PointLocation(int(min(tl)), int(max(tl)) + int(widthB)),
+            sly.PointLocation(int(min(tl)) + int(widthB), int(max(tl)) + int(widthB)),
+            sly.PointLocation(int(min(tl)) + int(widthB), int(max(tl))),
+        ]
+    )
 
     M = cv2.getPerspectiveTransform(rect, dst)
     warped = cv2.warpPerspective(src=image, M=M, dsize=(orig_wid, orig_height))
@@ -73,10 +79,11 @@ def transform_n_qrdetect(local_path, local_result_path):
     detector = cv2.QRCodeDetector()
     data, vertices_array, bin_qr = detector.detectAndDecode(countered_img)
     data_value = ast.literal_eval(data)
-    
+
     cv2.imwrite(local_result_path, warped)
 
     return polygon
+
 
 def main():
     global class_qr
@@ -87,13 +94,25 @@ def main():
     if project is None:
         raise KeyError(f"Project with ID {project_id} not found in your account")
 
-    tag_meta_edge = sly.TagMeta(name="QR_edge", value_type="any_number")
-    tag_meta_area = sly.TagMeta(name="Area", value_type="any_number")
-    tag_meta_measure = sly.TagMeta(name="measure unit", value_type="oneof_string", possible_values=["cm", "inch"])
+    tag_meta_edge = sly.TagMeta(name="QR_edge", value_type=sly.TagValueType.ANY_NUMBER)
+    tag_meta_area = sly.TagMeta(name="Area", value_type=sly.TagValueType.ANY_NUMBER)
+    tag_meta_measure = sly.TagMeta(
+        name="measure unit",
+        value_type=sly.TagValueType.ONEOF_STRING,
+        possible_values=["cm", "inch"],
+    )
 
-    new_project = api.project.create(project.workspace_id, project.name + "_transformed", description="perspective trasformation" ,change_name_if_conflict=True)
+    new_project = api.project.create(
+        project.workspace_id,
+        project.name + "_transformed",
+        description="perspective trasformation",
+        change_name_if_conflict=True,
+    )
     class_qr = sly.ObjClass(name="QR", geometry_type=sly.Polygon, color=[0, 255, 0])
-    new_meta = sly.ProjectMeta(obj_classes=[class_qr])
+    new_meta = sly.ProjectMeta(
+        obj_classes=[class_qr],
+        tag_metas=[tag_meta_edge, tag_meta_area, tag_meta_measure],
+    )
     api.project.update_meta(new_project.id, new_meta)
 
     datasets = api.dataset.get_list(project.id)
@@ -101,36 +120,38 @@ def main():
     for dataset in datasets:
         new_dataset = api.dataset.create(new_project.id, dataset.name)
         images = api.image.get_list(dataset.id)
-
         for image in images:
-            local_path = os.path.join("src", image.name)    
+            local_path = os.path.join("src", image.name)
             api.image.download_path(image.id, local_path)
             res_name = "res_" + image.name
             local_result_path = os.path.join("src", res_name)
             polygon = transform_n_qrdetect(local_path, local_result_path)
             if data_value is float or int:
                 edge_tag = sly.Tag(meta=tag_meta_edge, value=data_value)
-                area_tag = sly.Tag(meta=tag_meta_area, value=(round(data_value * data_value)))
+                area_tag = sly.Tag(
+                    meta=tag_meta_area, value=(round(data_value * data_value, ndigits=2))
+                )
                 measure_tag = sly.Tag(meta=tag_meta_measure, value="cm")
 
-                tags = sly.TagCollection(items=[edge_tag,area_tag,measure_tag])
+                tag_col = sly.TagCollection(items=[edge_tag, area_tag, measure_tag])
             else:
-                tags = None
+                tag_col = None
                 print("QR code is either not found or there is no values in it.")
 
             new_image = api.image.upload_path(new_dataset.id, image.name, local_result_path)
-            label = sly.Label(geometry=polygon, tags=tags, obj_class=class_qr)
-            new_ann = sly.Annotation(img_size=[new_image.height, new_image.width], labels=[label], img_tags=tags)
+            label = sly.Label(geometry=polygon, tags=tag_col, obj_class=class_qr)
+            new_ann = sly.Annotation(img_size=[new_image.height, new_image.width], labels=[label])
             api.annotation.upload_ann(new_image.id, new_ann)
 
             sly.fs.silent_remove(local_path)
             sly.fs.silent_remove(local_result_path)
             progress.iter_done_report()
     print("Done")
-    
+
     if sly.is_production():
         task_id = sly.env.task_id()
         api.task.set_output_project(task_id, new_project.id, new_project.name)
+
 
 if __name__ == "__main__":
     main()

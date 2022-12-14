@@ -116,7 +116,7 @@ def main():
             polygon, tags = transform_n_qrdetect(local_path, local_result_path)
             new_image = api.image.upload_path(new_dataset.id, image.name, local_result_path)
             label = sly.Label(geometry=polygon, tags=tags, obj_class=class_qr)
-            new_ann = sly.Annotation(img_size=[new_image.height, new_image.width], labels=[label])
+            new_ann = sly.Annotation(img_size=[new_image.height, new_image.width], labels=[label], img_tags=tags)
             api.annotation.upload_ann(new_image.id, new_ann)
 
             sly.fs.silent_remove(local_path)

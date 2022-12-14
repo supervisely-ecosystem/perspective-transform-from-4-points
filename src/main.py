@@ -76,7 +76,7 @@ def transform_n_qrdetect(local_path, local_result_path):
     
     cv2.imwrite(local_result_path, warped)
 
-    return polygon, tags
+    return polygon
 
 def main():
     global class_qr
@@ -107,7 +107,7 @@ def main():
             api.image.download_path(image.id, local_path)
             res_name = "res_" + image.name
             local_result_path = os.path.join("src", res_name)
-            polygon, tags = transform_n_qrdetect(local_path, local_result_path)
+            polygon = transform_n_qrdetect(local_path, local_result_path)
             if data_value is float or int:
                 edge_tag = sly.Tag(meta=tag_meta_edge, value=data_value)
                 area_tag = sly.Tag(meta=tag_meta_area, value=(round(data_value * data_value)))

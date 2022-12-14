@@ -57,12 +57,11 @@ def transform_n_qrdetect(local_path, local_result_path):
 
     dst = np.array(matrix, dtype = "float32")
     
-    # polygon = sly.Polygon(exterior=matrix)
     polygon = sly.Polygon(exterior=[
         sly.PointLocation(int(min(tl)), int(max(tl))), 
-        sly.PointLocation(int(min(tl)), int(max(tl)) + int(widthB) - 1), 
-        sly.PointLocation(int(min(tl)) + int(widthB) - 1, int(max(tl)) + int(widthB) - 1),
-        sly.PointLocation(int(min(tl)) + int(widthB) - 1, int(max(tl)))
+        sly.PointLocation(int(min(tl)), int(max(tl)) + int(widthB)), 
+        sly.PointLocation(int(min(tl)) + int(widthB), int(max(tl)) + int(widthB)),
+        sly.PointLocation(int(min(tl)) + int(widthB), int(max(tl)))
     ])
 
     M = cv2.getPerspectiveTransform(rect, dst)
@@ -70,6 +69,11 @@ def transform_n_qrdetect(local_path, local_result_path):
 
     detector = cv2.QRCodeDetector()
     data, vertices_array, bin_qr = detector.detectAndDecode(countered_img)
+
+    tags = sly.TagCollection(items=list[
+        "QR_edge": int(data),
+        "area": int(data) * int(data),
+        "measure":"cm"])
 
     if vertices_array is not None:
         print("QRCode data:")
@@ -79,7 +83,7 @@ def transform_n_qrdetect(local_path, local_result_path):
 
     cv2.imwrite(local_result_path, warped)
 
-    return polygon
+    return polygon, tags
 
 def main():
     global class_qr
@@ -106,9 +110,9 @@ def main():
             api.image.download_path(image.id, local_path)
             res_name = "res_" + image.name
             local_result_path = os.path.join("src", res_name)
-            polygon = transform_n_qrdetect(local_path, local_result_path)
+            polygon, tags = transform_n_qrdetect(local_path, local_result_path)
             new_image = api.image.upload_path(new_dataset.id, image.name, local_result_path)
-            label = sly.Label(geometry=polygon, obj_class=class_qr)
+            label = sly.Label(geometry=polygon, tags=tags, obj_class=class_qr)
             new_ann = sly.Annotation(img_size=[new_image.height, new_image.width], labels=[label])
             api.annotation.upload_ann(new_image.id, new_ann)
 

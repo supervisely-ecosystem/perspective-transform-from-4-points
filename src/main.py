@@ -54,7 +54,8 @@ def transform_n_qrdetect(local_path, local_result_path):
 	[int(max(tl)),int(min(tl)) + int(widthB) - 1]]
 
     dst = np.array(matrix, dtype = "float32")
-
+    
+    class_qr = sly.ObjClass(name="QR", geometry_type=sly.Polygon, color=[0, 255, 0])
     polygon = sly.Polygon(exterior=matrix)
     label = sly.Label(geometry=polygon,obj_class=class_qr)
 
@@ -88,7 +89,6 @@ def main():
         new_dataset = api.dataset.create(new_project.id, dataset.name)
         images = api.image.get_list(dataset.id)
         for image in images:
-            class_qr = sly.ObjClass(name="QR", geometry_type=sly.Polygon, color=[0, 255, 0])
             meta = sly.ProjectMeta(obj_classes=[class_qr])
             api.project.update_meta(project.id, meta)
             local_path = os.path.join("src", image.name)    
@@ -102,10 +102,10 @@ def main():
             progress.iter_done_report()
     print("Done")
     
-    if sly.is_production():
-        task_id = sly.env.task_id()
-        file_info = api.file.get_info_by_path()
-        api.task.set_output_directory(task_id, file_info.id, remote_dir)
+    # if sly.is_production():
+    #     task_id = sly.env.task_id()
+    #     file_info = api.file.get_info_by_path()
+    #     api.task.set_output_directory(task_id, file_info.id, remote_dir)
 
 if __name__ == "__main__":
     main()

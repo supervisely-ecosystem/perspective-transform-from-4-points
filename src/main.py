@@ -9,6 +9,8 @@ import supervisely as sly
 load_dotenv(os.path.expanduser("~/supervisely.env"))
 load_dotenv("local.env")
 
+class_qr = None
+
 def order_points(pts):
     rect = np.zeros((4, 2), dtype = "float32")
     s = pts.sum(axis = 1)
@@ -55,9 +57,7 @@ def transform_n_qrdetect(local_path, local_result_path):
 
     dst = np.array(matrix, dtype = "float32")
     
-    class_qr = sly.ObjClass(name="QR", geometry_type=sly.Polygon, color=[0, 255, 0])
     polygon = sly.Polygon(exterior=matrix)
-    label = sly.Label(geometry=polygon,obj_class=class_qr)
 
     M = cv2.getPerspectiveTransform(rect, dst)
     warped = cv2.warpPerspective(src=image, M=M, dsize=(orig_wid, orig_height))
@@ -73,7 +73,11 @@ def transform_n_qrdetect(local_path, local_result_path):
 
     cv2.imwrite(local_result_path, warped)
 
+    return polygon
+
 def main():
+    global class_qr
+
     api = sly.Api.from_env()
     project_id = int(os.environ["PROJECT_ID"])
     project = api.project.get_info_by_id(project_id)
@@ -82,6 +86,9 @@ def main():
     print(f"Project info: {project.name} (id={project.id})")
 
     new_project = api.project.create(project.workspace_id, project.name + "_transformed", description="perspective trasformation" ,change_name_if_conflict=True)
+    class_qr = sly.ObjClass(name="QR", geometry_type=sly.Polygon, color=[0, 255, 0])
+    new_meta = sly.ProjectMeta(obj_classes=[class_qr])
+    api.project.update_meta(new_project.id, new_meta)
 
     datasets = api.dataset.get_list(project.id)
     progress = sly.Progress("Processing...", project.items_count)
@@ -89,23 +96,24 @@ def main():
         new_dataset = api.dataset.create(new_project.id, dataset.name)
         images = api.image.get_list(dataset.id)
         for image in images:
-            meta = sly.ProjectMeta(obj_classes=[class_qr])
-            api.project.update_meta(project.id, meta)
             local_path = os.path.join("src", image.name)    
             api.image.download_path(image.id, local_path)
             res_name = "res_" + image.name
             local_result_path = os.path.join("src", res_name)
-            transform_n_qrdetect(local_path, local_result_path)
-            api.image.upload_path(new_dataset.id, image.name, local_result_path)
+            polygon = transform_n_qrdetect(local_path, local_result_path)
+            new_image = api.image.upload_path(new_dataset.id, image.name, local_result_path)
+            label = sly.Label(geometry=polygon, obj_class=class_qr)
+            new_ann = sly.Annotation(img_size=[new_image.height, new_image.width], labels=[label])
+            api.annotation.upload_ann(new_image.id, new_ann)
+
             sly.fs.silent_remove(local_path)
             sly.fs.silent_remove(local_result_path)
             progress.iter_done_report()
     print("Done")
     
-    # if sly.is_production():
-    #     task_id = sly.env.task_id()
-    #     file_info = api.file.get_info_by_path()
-    #     api.task.set_output_directory(task_id, file_info.id, remote_dir)
+    if sly.is_production():
+        task_id = sly.env.task_id()
+        api.task.set_output_project(task_id, new_project.id, new_project.name)
 
 if __name__ == "__main__":
     main()

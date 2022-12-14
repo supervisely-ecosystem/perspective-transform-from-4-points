@@ -1,5 +1,5 @@
 {
-  "release": { "version": "v1.0.17", "name": "perspective-qr" },
+  "release": { "version": "v1.0.18", "name": "perspective-qr" },
   "slug": "gera/perspective-transform-using-qr-code",
   "main_script": "src/main.py",
   "headless": true,

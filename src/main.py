@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 import imutils
 import supervisely as sly
-import ast
+from ast import literal_eval
 # load ENV variables for debug
 # has no effect in production
 load_dotenv(os.path.expanduser("~/supervisely.env"))
@@ -107,8 +107,6 @@ def main():
     progress = sly.Progress("Processing...", project.items_count)
     for dataset in datasets:
         new_dataset = api.dataset.create(new_project.id, dataset.name)
-
-
         images = api.image.get_list(dataset.id)
         for image in images:
             local_path = os.path.join("src", image.name)    

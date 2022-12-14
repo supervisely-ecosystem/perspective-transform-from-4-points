@@ -70,8 +70,7 @@ def transform_n_qrdetect(local_path, local_result_path):
 
     detector = cv2.QRCodeDetector()
     data, vertices_array, bin_qr = detector.detectAndDecode(countered_img)
-    print(type(ast.literal_eval(data)))
-    if type(ast.literal_eval(data)) is float:
+    if ast.literal_eval(data) is float or int:
         tags = sly.TagCollection(items=list[
             "QR_edge": round(float(data)),
             "area": round(float(data) * float(data)),

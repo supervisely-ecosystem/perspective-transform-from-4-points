@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import imutils
 import supervisely as sly
+import ast
 # load ENV variables for debug
 # has no effect in production
 load_dotenv(os.path.expanduser("~/supervisely.env"))
@@ -69,7 +70,8 @@ def transform_n_qrdetect(local_path, local_result_path):
 
     detector = cv2.QRCodeDetector()
     data, vertices_array, bin_qr = detector.detectAndDecode(countered_img)
-    if data is float:
+    print(type(ast.literal_eval(data)))
+    if type(ast.literal_eval(data)) is float:
         tags = sly.TagCollection(items=list[
             "QR_edge": round(float(data)),
             "area": round(float(data) * float(data)),
@@ -90,7 +92,6 @@ def main():
     project = api.project.get_info_by_id(project_id)
     if project is None:
         raise KeyError(f"Project with ID {project_id} not found in your account")
-    print(f"Project info: {project.name} (id={project.id})")
 
     new_project = api.project.create(project.workspace_id, project.name + "_transformed", description="perspective trasformation" ,change_name_if_conflict=True)
     class_qr = sly.ObjClass(name="QR", geometry_type=sly.Polygon, color=[0, 255, 0])

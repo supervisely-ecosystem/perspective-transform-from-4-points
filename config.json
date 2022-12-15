@@ -1,5 +1,5 @@
 {
-  "release": { "version": "v1.0.22", "name": "perspective-qr" },
+  "release": { "version": "v1.0.23", "name": "perspective-qr" },
   "slug": "gera/perspective-transform-using-qr-code",
   "main_script": "src/main.py",
   "headless": true,
@@ -16,7 +16,7 @@
       "images_project"
     ]
   },
-  "icon": "https://user-images.githubusercontent.com/115161827/207130914-a836bba6-a29f-4905-8428-c9f40c09d21a.jpg",
+  "icon": "https://user-images.githubusercontent.com/115161827/207945000-f88c05db-43a6-4c1f-8944-fdb15bead7a0.png",
   "icon_cover": true,
-  "poster": "https://user-images.githubusercontent.com/12828725/182181033-d0d1a690-8388-472e-8862-e0cacbd4f082.png"
+  "poster": "https://user-images.githubusercontent.com/115161827/207946617-bcee16ab-c54b-443a-9595-9800be72a070.jpg"
 }

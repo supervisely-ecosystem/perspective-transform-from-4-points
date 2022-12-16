@@ -4,9 +4,6 @@ import numpy as np
 import cv2
 import imutils
 import supervisely as sly
-import ast
-
-import re
 
 # load ENV variables for debug
 # has no effect in production
@@ -89,7 +86,7 @@ def transform_n_qrdetect(local_path, local_result_path):
             pass
     if len(numbers) == 0:
         raise ValueError(f"Can not recognize qr value: {e}")
-        
+
     data_value = numbers[0]
 
     cv2.imwrite(local_result_path, warped)

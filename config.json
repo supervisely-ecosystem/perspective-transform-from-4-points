@@ -7,7 +7,7 @@
   "description": "This app perspective transforms and warps your images using qr code in them.",
   "categories": [ 
     "images",
-    "annotation transformation",
+    "data transformation",
     "data operations"
   ],
   "context_menu": {

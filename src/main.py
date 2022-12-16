@@ -144,7 +144,7 @@ def main():
 
                 tag_col = sly.TagCollection(items=[edge_tag, area_tag, measure_tag])
             except Exception as e:
-                print("QR code is either not found or there is no values in it.")
+                print("QR code is either not found or there are no values in it.")
                 sly.logger.warn(repr(e))
                 continue
 

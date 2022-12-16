@@ -6,6 +6,8 @@ import imutils
 import supervisely as sly
 import ast
 
+import re
+
 # load ENV variables for debug
 # has no effect in production
 load_dotenv(os.path.expanduser("~/supervisely.env"))
@@ -13,6 +15,17 @@ load_dotenv("local.env")
 
 class_qr = None
 data_value = None
+
+x = "6.9 cm x 6.9 cm"
+parts = x.split()
+numbers = []
+for z in x.split():
+    try:
+        numbers.append(float(z))
+    except Exception as e:
+        pass
+if len(numbers) == 0:
+    raise ValueError(f"Can not recognize qr value: {x}")
 
 
 def order_points(pts):
@@ -78,7 +91,11 @@ def transform_n_qrdetect(local_path, local_result_path):
 
     detector = cv2.QRCodeDetector()
     data, vertices_array, bin_qr = detector.detectAndDecode(countered_img)
-    data_value = ast.literal_eval(data)
+    # data_value = ast.literal_eval(data)
+    # try:
+    #     data_value = float(data)
+    # except ValueError as e:
+    #     raise 123
 
     cv2.imwrite(local_result_path, warped)
 
@@ -125,8 +142,8 @@ def main():
             api.image.download_path(image.id, local_path)
             res_name = "res_" + image.name
             local_result_path = os.path.join("src", res_name)
-            polygon = transform_n_qrdetect(local_path, local_result_path)
-            if data_value is float or int:
+            try:
+                polygon = transform_n_qrdetect(local_path, local_result_path)
                 edge_tag = sly.Tag(meta=tag_meta_edge, value=data_value)
                 area_tag = sly.Tag(
                     meta=tag_meta_area, value=(round(data_value * data_value, ndigits=2))
@@ -134,9 +151,10 @@ def main():
                 measure_tag = sly.Tag(meta=tag_meta_measure, value="cm")
 
                 tag_col = sly.TagCollection(items=[edge_tag, area_tag, measure_tag])
-            else:
-                tag_col = None
+            except Exception as e:
                 print("QR code is either not found or there is no values in it.")
+                sly.logger.warn(repr(e))
+                continue
 
             new_image = api.image.upload_path(new_dataset.id, image.name, local_result_path)
             label = sly.Label(geometry=polygon, tags=tag_col, obj_class=class_qr)

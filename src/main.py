@@ -16,18 +16,6 @@ load_dotenv("local.env")
 class_qr = None
 data_value = None
 
-x = "6.9 cm x 6.9 cm"
-parts = x.split()
-numbers = []
-for z in x.split():
-    try:
-        numbers.append(float(z))
-    except Exception as e:
-        pass
-if len(numbers) == 0:
-    raise ValueError(f"Can not recognize qr value: {x}")
-
-
 def order_points(pts):
     rect = np.zeros((4, 2), dtype="float32")
     s = pts.sum(axis=1)
@@ -91,11 +79,18 @@ def transform_n_qrdetect(local_path, local_result_path):
 
     detector = cv2.QRCodeDetector()
     data, vertices_array, bin_qr = detector.detectAndDecode(countered_img)
-    # data_value = ast.literal_eval(data)
-    # try:
-    #     data_value = float(data)
-    # except ValueError as e:
-    #     raise 123
+
+    parts = data.split()
+    numbers = []
+    for z in parts:
+        try:
+            numbers.append(float(z))
+        except Exception as e:
+            pass
+    if len(numbers) == 0:
+        raise ValueError(f"Can not recognize qr value: {e}")
+        
+    data_value = numbers[0]
 
     cv2.imwrite(local_result_path, warped)
 

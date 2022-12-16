@@ -11,7 +11,8 @@ load_dotenv(os.path.expanduser("~/supervisely.env"))
 load_dotenv("local.env")
 
 class_qr = None
-data_value = None
+# data_value = None
+
 
 def order_points(pts):
     rect = np.zeros((4, 2), dtype="float32")
@@ -25,7 +26,7 @@ def order_points(pts):
 
 
 def transform_n_qrdetect(local_path, local_result_path):
-    global data_value
+    # global data_value
     image = cv2.imread(local_path)
     orig_height = image.shape[0]
     orig_wid = image.shape[1]
@@ -91,14 +92,14 @@ def transform_n_qrdetect(local_path, local_result_path):
 
     cv2.imwrite(local_result_path, warped)
 
-    return polygon
+    return polygon, data_value
 
 
 def main():
     global class_qr
 
     api = sly.Api.from_env()
-    project_id = int(os.environ["PROJECT_ID"])
+    project_id = sly.env.project_id()
     project = api.project.get_info_by_id(project_id)
     if project is None:
         raise KeyError(f"Project with ID {project_id} not found in your account")
@@ -135,7 +136,7 @@ def main():
             res_name = "res_" + image.name
             local_result_path = os.path.join("src", res_name)
             try:
-                polygon = transform_n_qrdetect(local_path, local_result_path)
+                polygon, data_value = transform_n_qrdetect(local_path, local_result_path)
                 edge_tag = sly.Tag(meta=tag_meta_edge, value=data_value)
                 area_tag = sly.Tag(
                     meta=tag_meta_area, value=(round(data_value * data_value, ndigits=2))

@@ -16,6 +16,11 @@
       "images_project"
     ]
   },
+  "modal_template_state": {
+    "findqr": true,
+    "ptr": true,
+    "outputMode": "in-place"
+  },
   "icon": "https://user-images.githubusercontent.com/115161827/207945000-f88c05db-43a6-4c1f-8944-fdb15bead7a0.png",
   "icon_cover": true,
   "poster": "https://user-images.githubusercontent.com/115161827/208094131-d3ab5fcf-3da3-476b-bd50-e563deaf9b72.jpg"

@@ -15,7 +15,9 @@ def strtobool(v):
     return v.lower() in ("true", "1", "True")
 
 
+e = None
 class_qr = None
+
 check_ptr = strtobool(os.environ["modal.state.ptr"])
 # check_findqr = bool(distutils.util.strtobool(os.environ["modal.state.findqr"]))
 if check_ptr is True:
@@ -36,6 +38,7 @@ def order_points(pts):
 
 
 def readqr(image):
+    global e
     detector = cv2.QRCodeDetector()
     data, vertices_array, bin_qr = detector.detectAndDecode(image)
 

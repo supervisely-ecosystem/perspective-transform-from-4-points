@@ -4,15 +4,19 @@ import numpy as np
 import cv2
 import imutils
 import supervisely as sly
-import distutils
 
 # load ENV variables for debug
 # has no effect in production
 load_dotenv(os.path.expanduser("~/supervisely.env"))
 load_dotenv("local.env")
 
+
+def strtobool(v):
+    return v.lower() in ("true", "1", "True")
+
+
 class_qr = None
-check_ptr = bool(distutils.util.strtobool(os.environ["modal.state.ptr"]))
+check_ptr = strtobool(os.environ["modal.state.ptr"])
 # check_findqr = bool(distutils.util.strtobool(os.environ["modal.state.findqr"]))
 if check_ptr is True:
     opt_outputMode = "new-project"
@@ -59,7 +63,7 @@ def transform(local_path, local_result_path):
     edged = cv2.Canny(gray, 75, 200)
     cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
-    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:5]
+    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:3]
     # loop over the contours
     for c in cnts:
         peri = cv2.arcLength(c, True)

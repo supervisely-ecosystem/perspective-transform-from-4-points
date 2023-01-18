@@ -1,7 +1,13 @@
 {
-  "release": { "version": "v1.0.31", "name": "perspective-qr" },
+  "release": { "version": "v1.0.33", "name": "perspective-qr" },
   "slug": "gera/perspective-transform-using-qr-code",
   "main_script": "src/main.py",
+  "modal_template": "src/modal.html",
+  "modal_template_state": {
+    "findqr": true,
+    "ptr": true,
+    "outputMode": "in-place"
+  },
   "headless": true,
   "name": "Perspective transform using QR code",
   "description": "This app perspective transforms and warps your images using qr code in them.",
@@ -15,12 +21,6 @@
     "target": [
       "images_project"
     ]
-  },
-  "modal_template": "src/modal.html",
-  "modal_template_state": {
-    "findqr": true,
-    "ptr": true,
-    "outputMode": "in-place"
   },
   "icon": "https://user-images.githubusercontent.com/115161827/207945000-f88c05db-43a6-4c1f-8944-fdb15bead7a0.png",
   "icon_cover": true,

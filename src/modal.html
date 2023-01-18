@@ -4,14 +4,10 @@
       description="Select which steps should be done"
     >
       <div>
-        <el-checkbox v-model="state.findqr" disabled
-          >Find QR code and extact size</el-checkbox
-        >
+        <el-checkbox v-model="state.findqr" label="Find QR code and extract size" disabled />
       </div>
       <div>
-        <el-checkbox v-model="state.ptr"
-          >Apply perspective transformation to images</el-checkbox
-        >
+        <el-checkbox v-model="state.ptr" label="Apply perspective transformation"/>
       </div>
     </sly-field>
     <div v-if="state.ptr === false">

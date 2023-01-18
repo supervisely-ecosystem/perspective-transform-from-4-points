@@ -16,6 +16,7 @@
       "images_project"
     ]
   },
+  "modal_template": "src/modal.html",
   "modal_template_state": {
     "findqr": true,
     "ptr": true,

@@ -19,7 +19,7 @@ e = None
 class_qr = None
 
 check_ptr = strtobool(os.environ["modal.state.ptr"])
-# check_findqr = bool(distutils.util.strtobool(os.environ["modal.state.findqr"]))
+
 if check_ptr is True:
     opt_outputMode = "new-project"
 else:
@@ -64,7 +64,7 @@ def transform(local_path, local_result_path):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (5, 5), 0)
     edged = cv2.Canny(gray, 75, 200)
-    cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cv2.findContours(edged, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
     cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:3]
     # loop over the contours

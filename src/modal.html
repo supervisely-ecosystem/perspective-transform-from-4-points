@@ -1,29 +1,33 @@
 <div>
-    <sly-field
-      title="Steps to perform"
-      description="Select which steps should be done"
-    >
-      <div>
-        <el-checkbox v-model="state.findqr" label="Find QR code and extract size" disabled />
-      </div>
-      <div>
-        <el-checkbox v-model="state.ptr" label="Apply perspective transformation"/>
-      </div>
-    </sly-field>
-    <div v-if="state.ptr === false">
-      <sly-field title="Results" description="Select where the results should be saved">
-        <el-select v-model="state.outputMode" placeholder="Select">
-          <el-option
-            key="in-place"
-            label="update existing project in-place"
-            value="in-place"
-          ></el-option>
-          <el-option
-            key="new-project"
-            label="create new project"
-            value="new-project"
-          ></el-option>
-        </el-select>
-      </sly-field>
+  <sly-field
+    title="Steps to perform"
+    description="Select which steps should be done"
+  >
+    <div>
+      <el-checkbox v-model="state.findqr" disabled
+        >Find QR code and extract size</el-checkbox
+      >
     </div>
+    <div>
+      <el-checkbox v-model="state.ptr"
+        >Apply perspective transformation to images</el-checkbox
+      >
+    </div>
+  </sly-field>
+  <div v-if="state.ptr === false">
+    <sly-field title="Results" description="Select where the results should be saved">
+      <el-select v-model="state.outputMode" placeholder="Select">
+        <el-option
+          key="in-place"
+          label="update existing project in-place"
+          value="in-place"
+        ></el-option>
+        <el-option
+          key="new-project"
+          label="create new project"
+          value="new-project"
+        ></el-option>
+      </el-select>
+    </sly-field>
   </div>
+</div>

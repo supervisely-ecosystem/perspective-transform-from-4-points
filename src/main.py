@@ -37,8 +37,9 @@ def order_points(pts):
     return rect
 
 
-def readqr(image):
+def readqr(local_path):
     global e
+    image = cv2.imread(local_path)
     detector = cv2.QRCodeDetector()
     data, vertices_array, bin_qr = detector.detectAndDecode(image)
 
@@ -99,7 +100,6 @@ def transform(local_path, local_result_path):
         M = cv2.getPerspectiveTransform(rect, dst)
         warped = cv2.warpPerspective(src=image, M=M, dsize=(orig_wid, orig_height))
         cv2.imwrite(local_result_path, warped)
-        data_value = readqr(image)
         polygon = sly.Polygon(
             exterior=[
                 sly.PointLocation(int(min(tl)), int(max(tl))),
@@ -109,7 +109,6 @@ def transform(local_path, local_result_path):
             ]
         )
     else:
-        data_value = readqr(image)
         polygon = sly.Polygon(
             exterior=[
                 sly.PointLocation(int(min(tl)), int(max(tl))),
@@ -119,7 +118,7 @@ def transform(local_path, local_result_path):
             ]
         )
 
-    return polygon, data_value
+    return polygon
 
 
 def main():
@@ -167,35 +166,36 @@ def main():
             res_name = "res_" + image.name
             local_result_path = os.path.join("src", res_name)
             try:
-                polygon, data_value = transform(local_path, local_result_path)
+                polygon = transform(local_path, local_result_path)
+                data_value = readqr(local_path)
                 edge_tag = sly.Tag(meta=tag_meta_edge, value=data_value)
                 area_tag = sly.Tag(
                     meta=tag_meta_area, value=(round(data_value * data_value, ndigits=2))
                 )
                 measure_tag = sly.Tag(meta=tag_meta_measure, value="cm")
+                label = sly.Label(
+                    geometry=polygon, tags=[edge_tag, area_tag, measure_tag], obj_class=class_qr
+                )
             except Exception as e:
                 print("QR code is either not found or there are no values in it.")
+                label = None
                 sly.logger.warn(repr(e))
-                continue
+                pass
 
-            label = sly.Label(
-                geometry=polygon, tags=[edge_tag, area_tag, measure_tag], obj_class=class_qr
-            )
-
-            if check_ptr is True:
-                new_ann = sly.Annotation(
-                    img_size=[new_image.height, new_image.width], labels=[label]
-                )
+            if opt_outputMode == "new-project":
+                new_image = api.image.upload_path(new_dataset.id, image.name, local_result_path)
+                if label is not None:
+                    new_ann = sly.Annotation(
+                        img_size=[new_image.height, new_image.width], labels=[label]
+                    )
+                    api.annotation.upload_ann(new_image.id, new_ann)
+                else:
+                    pass
             else:
                 new_ann_json = api.annotation.download_json(image.id)
                 new_ann = sly.Annotation.from_json(new_ann_json)
                 new_ann = new_ann.add_label(label)
                 local_result_path = local_path
-
-            if opt_outputMode == "new-project":
-                new_image = api.image.upload_path(new_dataset.id, image.name, local_result_path)
-                api.annotation.upload_ann(new_image.id, new_ann)
-            else:
                 api.annotation.upload_ann(image.id, new_ann)
 
             sly.fs.silent_remove(local_path)

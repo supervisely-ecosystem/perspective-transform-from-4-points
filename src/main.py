@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import imutils
 import supervisely as sly
+from pyzbar.pyzbar import decode
 
 # load ENV variables for debug
 # has no effect in production
@@ -23,7 +24,7 @@ check_ptr = strtobool(os.environ["modal.state.ptr"])
 if check_ptr is True:
     opt_outputMode = "new-project"
 else:
-    opt_outputMode = os.environ["modal.state.outputMode"]
+    opt_outputMode = os.environ["modal.outputMode"]
 
 
 def order_points(pts):
@@ -40,8 +41,9 @@ def order_points(pts):
 def readqr(local_path):
     global e
     image = cv2.imread(local_path)
-    detector = cv2.QRCodeDetector()
-    data, vertices_array, bin_qr = detector.detectAndDecode(image)
+    x = decode(image)
+    decoded = x[0]
+    data = decoded.data
 
     parts = data.split()
     numbers = []
@@ -50,9 +52,9 @@ def readqr(local_path):
             numbers.append(float(z))
         except Exception as e:
             pass
+
     if len(numbers) == 0:
         raise ValueError(f"Can not recognize qr value: {e}")
-
     data_value = numbers[0]
 
     return data_value
@@ -166,31 +168,33 @@ def main():
             res_name = "res_" + image.name
             local_result_path = os.path.join("src", res_name)
             try:
-                polygon = transform(local_path, local_result_path)
                 data_value = readqr(local_path)
-                edge_tag = sly.Tag(meta=tag_meta_edge, value=data_value)
-                area_tag = sly.Tag(
-                    meta=tag_meta_area, value=(round(data_value * data_value, ndigits=2))
-                )
-                measure_tag = sly.Tag(meta=tag_meta_measure, value="cm")
-                label = sly.Label(
-                    geometry=polygon, tags=[edge_tag, area_tag, measure_tag], obj_class=class_qr
-                )
             except Exception as e:
                 print("QR code is either not found or there are no values in it.")
-                label = None
+                data_value = 0
                 sly.logger.warn(repr(e))
                 pass
+            polygon = transform(local_path, local_result_path)
+
+            edge_tag = sly.Tag(meta=tag_meta_edge, value=data_value)
+            area_tag = sly.Tag(
+                meta=tag_meta_area, value=(round(data_value * data_value, ndigits=2))
+            )
+            measure_tag = sly.Tag(meta=tag_meta_measure, value="cm")
+            label = sly.Label(
+                geometry=polygon, tags=[edge_tag, area_tag, measure_tag], obj_class=class_qr
+            )
 
             if opt_outputMode == "new-project":
-                new_image = api.image.upload_path(new_dataset.id, image.name, local_result_path)
-                if label is not None:
-                    new_ann = sly.Annotation(
-                        img_size=[new_image.height, new_image.width], labels=[label]
-                    )
-                    api.annotation.upload_ann(new_image.id, new_ann)
+                if check_ptr is True:
+                    new_image = api.image.upload_path(new_dataset.id, image.name, local_result_path)
                 else:
-                    pass
+                    new_image = api.image.upload_path(new_dataset.id, image.name, local_path)
+
+                new_ann = sly.Annotation(
+                    img_size=[new_image.height, new_image.width], labels=[label]
+                )
+                api.annotation.upload_ann(new_image.id, new_ann)
             else:
                 new_ann_json = api.annotation.download_json(image.id)
                 new_ann = sly.Annotation.from_json(new_ann_json)

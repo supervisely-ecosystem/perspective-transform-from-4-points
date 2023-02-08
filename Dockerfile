@@ -1,4 +1,5 @@
 FROM supervisely/base-py-sdk:6.68.26
 
-RUN pip install pyzbar 0.1.9
+COPY requirements.txt .
+RUN apt-get install libzbar0
 RUN pip install -r requirements.txt

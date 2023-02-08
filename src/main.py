@@ -197,7 +197,7 @@ def main():
                 api.annotation.upload_ann(new_image.id, new_ann)
             else:
                 new_ann_json = api.annotation.download_json(image.id)
-                new_ann = sly.Annotation.from_json(new_ann_json)
+                new_ann = sly.Annotation.from_json(new_ann_json, new_meta)
                 new_ann = new_ann.add_label(label)
                 local_result_path = local_path
                 api.annotation.upload_ann(image.id, new_ann)

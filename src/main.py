@@ -24,7 +24,7 @@ check_ptr = strtobool(os.environ["modal.state.ptr"])
 if check_ptr is True:
     opt_outputMode = "new-project"
 else:
-    opt_outputMode = os.environ["modal.outputMode"]
+    opt_outputMode = os.environ["modal.state.outputMode"]
 
 
 def order_points(pts):

@@ -209,7 +209,7 @@ def main():
 
     if sly.is_production():
         task_id = sly.env.task_id()
-        if opt_outputMode is "in-place":
+        if opt_outputMode == "in-place":
             api.task.set_output_project(task_id, project.id, project.name)
         else:
             api.task.set_output_project(task_id, new_project.id, new_project.name)

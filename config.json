@@ -6,7 +6,7 @@
     "slug": "gera/perspective-transform-using-qr-code",
     "main_script": "src/main.py",
     "modal_template": "src/modal.html",
-    "docker_image": "supervisely/data-operations:0.0.1",
+    "docker_image": "supervisely/data-operations:0.0.3",
     "modal_template_state": {
         "findqr": true,
         "ptr": true,
